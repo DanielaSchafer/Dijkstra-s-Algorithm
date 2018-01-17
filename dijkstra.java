@@ -5,15 +5,15 @@ public class dijkstra {
 
 	public static void main(String[] args) {
 
-		Node a = new Node("a"); //0
-		Node b = new Node("b"); //1
-		Node c = new Node("c"); //2
-		Node d = new Node("d"); //3
-		Node e = new Node("e"); //4
-		Node f = new Node("f"); //5
-		Node g = new Node("g"); //6
-		Node h = new Node("h"); //7
-		Node i = new Node("i"); //8
+		Node a = new Node("a",0); //0
+		Node b = new Node("b",0); //1
+		Node c = new Node("c",0); //2
+		Node d = new Node("d",0); //3
+		Node e = new Node("e",0); //4
+		Node f = new Node("f",0); //5
+		Node g = new Node("g",0); //6
+		Node h = new Node("h",0); //7
+		Node i = new Node("i",0); //8
 
 		Edge ab = new Edge(a,b,4);
 		Edge ag = new Edge(a,g,8);
