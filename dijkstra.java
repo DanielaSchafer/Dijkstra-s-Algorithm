@@ -15,10 +15,25 @@ public class dijkstra {
 		Node h = new Node("h",0); //7
 		Node i = new Node("i",0); //8
 
+		//Node[] n = {a,b,c,d,e,f,g,h,i};
+
+		//ArrayList<Node> nodes = new ArrayList<Node>();
+		HashMap<String,Node> nodes = new HashMap<String,Node>();
+
+		nodes.put(a.getLabel(),a);
+		nodes.put(b.getLabel(),b);
+		nodes.put(c.getLabel(),c);
+		nodes.put(d.getLabel(),d);
+		nodes.put(e.getLabel(),e);
+		nodes.put(f.getLabel(),f);
+		nodes.put(g.getLabel(),g);
+		nodes.put(h.getLabel(),h);
+		nodes.put(i.getLabel(),i);
+
 		Edge ab = new Edge(a,b,4);
-		Edge ag = new Edge(a,g,8);
+		Edge ag = new Edge(a,h,8);
 		Edge bc = new Edge(b,c,8);
-		Edge bh = new Edge(b,h,11);
+		Edge bg = new Edge(b,h,11);
 		Edge cd = new Edge(c,d,7);
 		Edge ci = new Edge(c,i,2);
 		Edge cf = new Edge(c,f,4);
@@ -33,7 +48,7 @@ public class dijkstra {
 		a.addNeighbor(ab);
 		a.addNeighbor(ag);
 		b.addNeighbor(bc);
-		b.addNeighbor(bh);
+		b.addNeighbor(bg);
 		c.addNeighbor(cd);
 		c.addNeighbor(ci);
 		c.addNeighbor(cf);
@@ -47,73 +62,73 @@ public class dijkstra {
 
 		int nodeCount = 8;
 
-		System.out.println(a.getNeighbors());
+		//System.out.println(a.getNeighbors());
 
-		System.out.println(getShortestPath(nodeCount,a));
+		//System.out.println(getShortestPath(nodes,0));
+
+		System.out.println(getShortestPaths(nodes,"a"));
 
 	}
 
-	public static ArrayList<Edge> getShortestPath(int nodeCount, Node startingNode)
+	public static HashMap<String,Integer> getShortestPaths(HashMap<String,Node> graph, String startingNode)
 	{
-		ArrayList<Node> spSet = new ArrayList<Node>();
-		ArrayList<Edge> sp = new ArrayList<Edge>();
+		HashMap<String,Integer> distances = new HashMap<String,Integer>();
+		HashMap<String, Node> found = new HashMap<String, Node>();
 
-		spSet.add(startingNode);
-
-		while(spSet.size()<nodeCount)
+		for(String key : graph.keySet())
 		{
-			ArrayList<Edge> possEdges = new ArrayList<Edge>();
+			if(key.equals(startingNode))
+				distances.put(key, 0);
+			else
+				distances.put(key,Integer.MAX_VALUE);
+		}
 
-			//gets possible edge choices
-			for(int i = 0; i<spSet.size(); i++)
-			{
-				possEdges.addAll(spSet.get(i).getNeighbors());
-			}
-			for(int i = 0; i<possEdges.size(); i++)
-			{
-				if(sp.contains(possEdges.get(i)))
-					possEdges.remove(i);
-				else if(spSet.contains(possEdges.get(i).getOne()) && spSet.contains(possEdges.get(i).getTwo()))
-					possEdges.remove(i);
-			}
+		while(found.size()<graph.size())
+		{
+			String minNodeKey = pickMinDistance(found,graph,distances);
+			Node minNode = graph.get(minNodeKey);
+			found.put(minNodeKey, minNode);
 
-			int minDistanceIndex = 0;
-			for(int i = 1; i<possEdges.size(); i++)
+			ArrayList<Edge> neighbors = minNode.getNeighbors();
+			for(int i = 0; i<neighbors.size(); i++)
 			{
-				if(possEdges.get(i).getWeight()<possEdges.get(minDistanceIndex).getNeighbor())
-					minWeightIndex = i;
-			}
-			Edge minEdge = possEdges.get(minWeightIndex);
-			Node nodeAdded = getOtherNode(minEdge,spSet);
-			int distance = nodeAdded.getDistance();
-			sp.add(minEdge);
-			spSet.add(nodeAdded);
-
-			ArrayList<Edge> newEdges = nodeAdded.getNeighbors();
-
-			for(int i = 0; i<newEdges.size(); i++)
-			{
-				if(!sp.contains(newEdges.get(i)))
+				int newDistance = neighbors.get(i).getWeight()+distances.get(minNodeKey);
+				System.out.println("new distance "+ newDistance);
+				if(newDistance<distances.get(neighbors.get(i).getNeighbor(minNode).getLabel()))
 				{
-					newEdges.get(i).getNeighbor(nodeAdded).setDistance(newEdges.get(i).getWeight()+distance);
+					distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
 				}
 			}
+			System.out.println(found);
+
 		}
-		return sp;
+		return distances;
 	}
 
-	public static Node getOtherNode(Edge e, ArrayList<Node> nodes)
+	public static String pickMinDistance(HashMap<String, Node> nodesFound, HashMap<String,Node> graph, HashMap<String,Integer> distances)
 	{
-		for(int i = 0; i< nodes.size(); i++)
+		String minKey = null;
+		int minVal = -1;
+
+		for(String key : graph.keySet())
 		{
-			if(e.getOne().equals(nodes.get(i)))
-				return e.getTwo();
-			else if(e.getTwo().equals(nodes.get(i)))
-				return e.getOne();
+			if(nodesFound.containsKey(key) == false)
+			{
+				minKey = key;
+				minVal = distances.get(key);
+			}
 		}
 
-		System.err.println("node does not exsist");
-		return e.getOne();
+		for(String key : graph.keySet())
+		{
+			if(nodesFound.containsKey(key) == false && distances.get(key)<minVal)
+			{
+				minKey = key;
+				minVal = distances.get(key);
+			}
+		}
+		System.out.println(minVal);
+		return minKey;
 	}
 
 }
