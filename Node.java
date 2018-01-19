@@ -3,7 +3,6 @@ import java.util.*;
 public class Node {
 	 private ArrayList<Edge> neighborhood;
 	    private String label;
-	    private int distance;
 
 	    /**
 	     *
@@ -17,24 +16,7 @@ public class Node {
 	    public Node(String label, int distance){
 	        this.label = label;
 	        this.neighborhood = new ArrayList<Edge>();
-	        this.distance = distance;
 	    }
-
-	    public int getDistance()
-	    {
-	    	return distance;
-	    }
-
-	    public void setDistance(int newD)
-	    {
-	    	this.distance = newD;
-	    }
-
-	    public void addDistance(int d)
-	    {
-	    	this.distance = this.distance+d;
-	    }
-
 
 	    /**
 	     * This method adds an Edge to the incidence neighborhood of this graph iff
