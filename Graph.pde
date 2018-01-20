@@ -1,3 +1,8 @@
+//DIJKSTRA THE DINOSAUR
+//PRESS ANY KEY WITH A CORRESPONDING NODE LETTER TO GET THE SHORTEST PATH
+//PRESS R TO RESTART
+//PRESS Z TO GO THROUGH THE STEPS OF GETTING THE SHORTEST PATH TREE
+
 PImage dino;
 PImage grass;
 PImage tree;
@@ -30,8 +35,8 @@ void setup()
   textFont(g);
   text("Art by Sonia Fung", 1000, 780);
 
-  start = "a";
-  stepNum = -1;
+  start = "g";
+  stepNum = -2;
   edges = new ArrayList<Edge>();
   nodes = new HashMap<String, Node>();
   getNodeEdgeArrays(edges, nodes);
@@ -47,6 +52,7 @@ void draw()
 
 void keyPressed()
 {
+  System.out.println(stepNum);
   image(grass, 0, 0);
   fill(255);
   PFont g = createFont("Bookman Old Style Italic", 20);
@@ -55,23 +61,28 @@ void keyPressed()
   if (key == 'r')
   {
     stepNum = -2;
-  }
-  if (nodes.containsKey(Character.toString(key)))
+    present(stepNum, start);
+  } else if (nodes.containsKey(Character.toString(key)))
   {
     String keyVal = Character.toString(key);
     drawHighlightedPath(nodes, start, keyVal);
     drawDino(nodes.get(keyVal));
     stepNum = 0;
-  } else
+  } else if (key == 'z')
   {
     System.out.println("pressed " +stepNum);
     present(stepNum, start);
     stepNum++;
-  }
+  } else
+    present(stepNum, start);
 }
 
 public void present(int step, String start)
 {
+  if(step <-2)
+  {
+    drawGraph(nodes,edges);
+  }
   if (step <-1)
   {
     drawGraph(nodes, edges);
@@ -231,8 +242,12 @@ public void drawHighlightedGraph(HashMap<String, Node> nodes, ArrayList<Edge> ed
     if (usedEdges.contains(e))
       drawUsedEdge(e);
     else if (neighborsOfCurrNode.contains(e))
-      drawEdgeWithWeight(e);
-    else
+    {
+      if (!(found.contains(e.getOne()) && found.contains(e.getTwo())))
+        drawEdgeWithWeight(e);
+      else
+        drawEdge(e);
+    } else
       drawEdge(e);
   }
   for (String key : nodes.keySet())
@@ -620,15 +635,15 @@ public static String pickMinDistance(HashMap<String, Node> nodesFound, HashMap<S
 
 public void getNodeEdgeArrays(ArrayList<Edge> edges, HashMap<String, Node> nodes)
 {
-  Node a = new Node(200, 400, "a");
-  Node b = new Node(300, 200, "b");
-  Node c = new Node(400, 600, "c");
-  Node d = new Node(500, 300, "d");
-  Node e = new Node(600, 500, "e");
-  Node f = new Node(700, 200, "f");
-  Node g = new Node(800, 400, "g");
-  Node h = new Node(900, 600, "h");
-  Node i = new Node(1000, 400, "i");
+  Node a = new Node(200, 375, "a");
+  Node b = new Node(300, 175, "b");
+  Node c = new Node(400, 575, "c");
+  Node d = new Node(500, 275, "d");
+  Node e = new Node(600, 475, "e");
+  Node f = new Node(700, 175, "f");
+  Node g = new Node(800, 375, "g");
+  Node h = new Node(900, 575, "h");
+  Node i = new Node(1000, 375, "i");
 
   Edge ab = new Edge(a, b, 4);
   Edge ac = new Edge(a, c, 8);
