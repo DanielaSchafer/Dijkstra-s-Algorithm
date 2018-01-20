@@ -4,6 +4,11 @@ PImage tree;
 
 PFont treeName;
 PFont treeDistance;
+ArrayList<Edge> edges;
+HashMap<String, Node> nodes;
+String start;
+color highlight;
+
 
 int stepNum;
 
@@ -25,36 +30,68 @@ void setup()
   textFont(g);
   text("Art by Sonia Fung", 1000, 780);
 
-  stepNum = 1;
+  start = "a";
+  stepNum = -1;
+  edges = new ArrayList<Edge>();
+  nodes = new HashMap<String, Node>();
+  getNodeEdgeArrays(edges, nodes);
+  highlight = color(255, 0, 0);
+
+  drawGraph(nodes, edges);
 }
 
 
 void draw()
 {
+  if (key == 'r')
+  {
+    stepNum = 0;
+  }
 }
 
 void keyPressed()
 {
   image(grass, 0, 0);
-  System.out.println("pressed " +stepNum);
-  present(stepNum);
-  stepNum++;
+    fill(255);
+    PFont g = createFont("Bookman Old Style Italic", 20);
+    textFont(g);
+    text("Art by Sonia Fung", 1000, 780);
+  if (nodes.containsKey(Character.toString(key)))
+  {
+    String keyVal = Character.toString(key);
+    drawHighlightedPath(nodes, start, keyVal);
+    drawDino(nodes.get(keyVal));
+    stepNum = 0;
+  } else
+  {
+    System.out.println("pressed " +stepNum);
+    present(stepNum, start);
+    stepNum++;
+  }
 }
 
-public void present(int step)
+public void present(int step, String start)
 {
   System.out.println("step "+step);
-  ArrayList<Edge> edges = new ArrayList<Edge>();
-  HashMap<String, Node> nodes = new HashMap<String, Node>();
-  getNodeEdgeArrays(edges, nodes);
 
-  if (step == 0)
+  if (step <-1)
+  {
     drawGraph(nodes, edges);
+    drawDino(nodes.get(start));
+  } else if (step <0)
+  {
+    drawGraphWithWeight(nodes, edges);
+    drawDino(nodes.get(start));
+  } else if (step<1)
+  {
+    drawStartingGraph(nodes, edges, start);
+    drawDino(nodes.get(start));
+  }
   else if (step<=nodes.size())
   {
-    ArrayList<Node> found = getShortestPathsRoute(nodes, "a", edges, step);
+    ArrayList<Node> found = getShortestPathsRoute(nodes, start, edges, step);
 
-    drawHighlightedGraph(nodes, edges, found, step);
+    drawHighlightedGraph(nodes, edges, found, step, start);
     drawDino(found.get(found.size()-1));
   } else
   drawCompleteGraph(nodes, edges);
@@ -77,14 +114,10 @@ public void drawNode(Node n)
 {
   strokeWeight(1);
   stroke(0);
-
-  //fill(50,200,100);
-  //ellipse(n.getX(),n.getY(),50,50);
   image(tree, n.getX(), n.getY());
   fill(0);
   textFont(treeName);
   text(n.getLabel(), n.getX()+10, n.getY()-4);
-
   fill(22, 159, 242);
 }
 
@@ -118,10 +151,31 @@ public void drawEdgeWithWeight(Edge e)
   text(e.getWeight(), midX, midY);
 }
 
-public void drawGEdge(Edge e)
+public void drawColorEdgeWithWeight(Edge e)
 {
- strokeWeight(3);
-  stroke(255);
+  strokeWeight(3);
+  stroke(highlight);
+  Node a = e.getOne();
+  Node b = e.getTwo();
+  line(a.getX()+25, a.getY()+65, b.getX()+25, b.getY()+65);
+
+  textFont(treeDistance);
+  noStroke();
+  int midX = ((a.getX()+25)+(b.getX()+25))/2;
+  int midY = ((a.getY()+65)+(b.getY()+65))/2;
+  fill(172, 255, 49);
+  if (e.getWeight()<10)
+    rect(midX-3, midY-17, 20, 20, 5);
+  else
+    rect(midX-1, midY-17, 30, 20, 5);
+  fill(0);
+  text(e.getWeight(), midX, midY);
+}
+
+public void drawUsedEdge(Edge e)
+{
+  strokeWeight(3);
+  stroke(highlight);
   Node a = e.getOne();
   Node b = e.getTwo();
   line(a.getX()+25, a.getY()+65, b.getX()+25, b.getY()+65);
@@ -139,6 +193,22 @@ public void drawGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges)
   }
 }
 
+public void drawStartingGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges, String start)
+{
+  for (int i = 0; i<edges.size(); i++)
+  {
+    drawEdgeWithWeight(edges.get(i));
+  }
+  for (String key : nodes.keySet())
+  {
+    drawNode(nodes.get(key));
+    if (key.equals(start))
+      drawNodeLabel(nodes.get(key), 0);
+    else
+      drawNodeLabel(nodes.get(key), Integer.MAX_VALUE);
+  }
+}
+
 public void drawGraphWithWeight(HashMap<String, Node> nodes, ArrayList<Edge> edges)
 {
   for (int i = 0; i<edges.size(); i++)
@@ -151,14 +221,17 @@ public void drawGraphWithWeight(HashMap<String, Node> nodes, ArrayList<Edge> edg
   }
 }
 
-public void drawHighlightedGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges, ArrayList<Node> found, int steps)
+public void drawHighlightedGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges, ArrayList<Node> found, int steps, String start)
 {
-  HashMap<String, Integer> distances = getShortestPathsSteps(nodes, "a", steps);
+  HashMap<String, Integer> distances = getShortestPathsSteps(nodes, start, steps);
+  HashMap<String, ArrayList<Edge>> paths = getShortestPathTreeSteps(nodes, start, steps);
+  ArrayList<Edge> usedEdges = getSptEdges(paths);
+
   System.out.println(distances);
   for (int i = 0; i<edges.size(); i++)
   {
-    if (found.contains(edges.get(i).getOne()) && found.contains(edges.get(i).getTwo()))
-      drawGEdge(edges.get(i));
+    if (usedEdges.contains(edges.get(i)))
+      drawUsedEdge(edges.get(i));
     else
       drawEdge(edges.get(i));
   }
@@ -169,6 +242,29 @@ public void drawHighlightedGraph(HashMap<String, Node> nodes, ArrayList<Edge> ed
       drawNodeLabelFound(nodes.get(key), distances.get(key));
     else
       drawNodeLabel(nodes.get(key), distances.get(key));
+  }
+}
+
+public void drawHighlightedPath(HashMap<String, Node> nodes, String start, String end)
+{
+  HashMap<String, Integer> distances = getShortestPaths(nodes, start);
+  HashMap<String, ArrayList<Edge>> spTree = getShortestPathTree(nodes, start);
+  ArrayList<Edge> usedEdges = spTree.get(end);
+
+  System.out.println("usedEdges "+usedEdges);
+
+  for (int i = 0; i<edges.size(); i++)
+  {
+    if (usedEdges.contains(edges.get(i)))
+      drawColorEdgeWithWeight(edges.get(i));
+    else
+      drawEdgeWithWeight(edges.get(i));
+  }
+  for (String key : nodes.keySet())
+  {
+    drawNode(nodes.get(key));
+    if (nodes.get(key).getLabel().equals(end) || nodes.get(key).getLabel().equals(start))
+      drawNodeLabelFound(nodes.get(key), distances.get(key));
   }
 }
 
@@ -240,6 +336,35 @@ public void drawNodeLabelFound(Node n, int dist)
   }
 }
 
+public static ArrayList<Edge> getSptEdges(HashMap<String, ArrayList<Edge>> paths)
+{
+  ArrayList<Edge> usedEdges = new ArrayList<Edge>();
+  for (String key : paths.keySet())
+  {
+    for (int i = 0; i<paths.get(key).size(); i++)
+    {
+      if (!usedEdges.contains(paths.get(key).get(i)))
+        usedEdges.add(paths.get(key).get(i));
+    }
+  }
+  return usedEdges;
+}
+
+public static ArrayList<Node> getNodesInPath(ArrayList<Edge> edges)
+{
+  ArrayList<Node> nodes = new ArrayList<Node>();
+  for (int i = 0; i<edges.size(); i++)
+  {
+    Node one = edges.get(i).getOne();
+    Node two = edges.get(i).getTwo();
+    if (nodes.contains(one))
+      nodes.add(one);
+    else if (nodes.contains(two))
+      nodes.add(two);
+  }
+  return nodes;
+}
+
 
 public ArrayList<Node> getShortestPathsRoute(HashMap<String, Node> graph, String startingNode, ArrayList<Edge> edges, int steps)
 {
@@ -279,9 +404,7 @@ public ArrayList<Node> getShortestPathsRoute(HashMap<String, Node> graph, String
 
 public HashMap<String, Integer> getShortestPathsSteps(HashMap<String, Node> graph, String startingNode, int steps)
 {
-  //the distance hm: where the shortest distance from each node to the starting node is stored
   HashMap<String, Integer> distances = new HashMap<String, Integer>();
-  //keeps track of nodes already used
   HashMap<String, Node> found = new HashMap<String, Node>();
 
   for (String key : graph.keySet())
@@ -294,24 +417,15 @@ public HashMap<String, Integer> getShortestPathsSteps(HashMap<String, Node> grap
 
   while (found.size()<steps)
   {
-    //finds the node with the shortest distance, and that hasn't been accounted for
     String minNodeKey = pickMinDistance(found, graph, distances);
     Node minNode = graph.get(minNodeKey);
-    //adds it to the hm of nodes that have been found
     found.put(minNodeKey, minNode);
 
-    //gets neighboring edges of the minNode
     ArrayList<Edge> neighbors = minNode.getNeighbors();
 
-    //changes the distance for each of the edges based off of the distance of the node and the weight of the edge
-    //only if the new distance is shorter than the original distance
     for (int i = 0; i<neighbors.size(); i++)
     {
-      //the distance from the starting node to the minNode + the weight of the edge
       int newDistance = neighbors.get(i).getWeight()+distances.get(minNodeKey);
-
-      //checks to make sure that the edge hasn't been accounted for
-      //by seeing if the new distance is less than the original distance of the node
       if (newDistance<distances.get(neighbors.get(i).getNeighbor(minNode).getLabel()))
       {
         distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
@@ -323,13 +437,9 @@ public HashMap<String, Integer> getShortestPathsSteps(HashMap<String, Node> grap
 
 public HashMap<String, Integer> getShortestPaths(HashMap<String, Node> graph, String startingNode)
 {
-  //the distance hm: where the shortest distance from each node to the starting node is stored
   HashMap<String, Integer> distances = new HashMap<String, Integer>();
   //keeps track of nodes already used
   HashMap<String, Node> found = new HashMap<String, Node>();
-
-  //gives each node a distance of infinity (max integer)
-  //except for the starting node, which gets a distance of 0
   for (String key : graph.keySet())
   {
     if (key.equals(startingNode))
@@ -337,28 +447,15 @@ public HashMap<String, Integer> getShortestPaths(HashMap<String, Node> graph, St
     else
       distances.put(key, Integer.MAX_VALUE);
   }
-
-  //uses a while loop to make sure to hit all the nodes once
   while (found.size()<graph.size())
   {
-    //finds the node with the shortest distance, and that hasn't been accounted for
     String minNodeKey = pickMinDistance(found, graph, distances);
     Node minNode = graph.get(minNodeKey);
-    //adds it to the hm of nodes that have been found
     found.put(minNodeKey, minNode);
-
-    //gets neighboring edges of the minNode
     ArrayList<Edge> neighbors = minNode.getNeighbors();
-
-    //changes the distance for each of the edges based off of the distance of the node and the weight of the edge
-    //only if the new distance is shorter than the original distance
     for (int i = 0; i<neighbors.size(); i++)
     {
-      //the distance from the starting node to the minNode + the weight of the edge
       int newDistance = neighbors.get(i).getWeight()+distances.get(minNodeKey);
-
-      //checks to make sure that the edge hasn't been accounted for
-      //by seeing if the new distance is less than the original distance of the node
       if (newDistance<distances.get(neighbors.get(i).getNeighbor(minNode).getLabel()))
       {
         distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
@@ -368,13 +465,125 @@ public HashMap<String, Integer> getShortestPaths(HashMap<String, Node> graph, St
   return distances;
 }
 
-//finds the next node with the shortest distance (cannot be a node already found)
+public static HashMap<String, ArrayList<Edge>> getShortestPathTree(HashMap<String, Node> graph, String start)
+{
+  HashMap<String, Integer> distances = new HashMap<String, Integer>();
+  HashMap<String, ArrayList<Edge>> path = new HashMap<String, ArrayList<Edge>>();
+
+  HashMap<String, Node> found = new HashMap<String, Node>();
+
+  for (String key : graph.keySet())
+  {
+    if (key.equals(start)) {
+      distances.put(key, 0);
+      ArrayList<Edge> newPath = new ArrayList<Edge>();
+      path.put(key, newPath);
+    } else
+      distances.put(key, Integer.MAX_VALUE);
+  }
+  while (found.size()<graph.size())
+  {
+    String minNodeKey = pickMinDistance(found, graph, distances);
+    Node minNode = graph.get(minNodeKey);
+    found.put(minNodeKey, minNode);
+
+    ArrayList<Edge> neighbors = minNode.getNeighbors();
+
+    System.out.println("neighbors "+ neighbors);
+
+    for (int i = 0; i<neighbors.size(); i++)
+    {
+      int checkingDistance = distances.get(neighbors.get(i).getNeighbor(minNode).getLabel())+neighbors.get(i).getWeight();
+      int minNodeDistance = distances.get(minNodeKey);
+
+      System.out.println("check "+checkingDistance);
+      System.out.println("min "+minNodeDistance);
+
+      if (checkingDistance == minNodeDistance)
+      {
+        ArrayList<Edge> newPath = new ArrayList<Edge>();
+        newPath.addAll(path.get(neighbors.get(i).getNeighbor(minNode).getLabel()));
+        newPath.add(neighbors.get(i));
+        path.put(minNodeKey, newPath);
+      }
+    }
+
+    for (int i = 0; i<neighbors.size(); i++)
+    {
+      int newDistance = neighbors.get(i).getWeight()+distances.get(minNodeKey);
+
+      if (newDistance<distances.get(neighbors.get(i).getNeighbor(minNode).getLabel()))
+      {
+        distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
+      }
+    }
+    System.out.println(distances);
+  }
+  return path;
+}
+
+public static HashMap<String, ArrayList<Edge>> getShortestPathTreeSteps(HashMap<String, Node> graph, String start, int step)
+{
+  HashMap<String, Integer> distances = new HashMap<String, Integer>();
+  HashMap<String, ArrayList<Edge>> path = new HashMap<String, ArrayList<Edge>>();
+
+  HashMap<String, Node> found = new HashMap<String, Node>();
+
+  for (String key : graph.keySet())
+  {
+    if (key.equals(start)) {
+      distances.put(key, 0);
+      ArrayList<Edge> newPath = new ArrayList<Edge>();
+      path.put(key, newPath);
+    } else
+      distances.put(key, Integer.MAX_VALUE);
+  }
+  while (found.size()<step)
+  {
+    String minNodeKey = pickMinDistance(found, graph, distances);
+    Node minNode = graph.get(minNodeKey);
+    found.put(minNodeKey, minNode);
+
+    ArrayList<Edge> neighbors = minNode.getNeighbors();
+
+    System.out.println("neighbors "+ neighbors);
+
+    for (int i = 0; i<neighbors.size(); i++)
+    {
+      int checkingDistance = distances.get(neighbors.get(i).getNeighbor(minNode).getLabel())+neighbors.get(i).getWeight();
+      int minNodeDistance = distances.get(minNodeKey);
+
+      System.out.println("check "+checkingDistance);
+      System.out.println("min "+minNodeDistance);
+
+      if (checkingDistance == minNodeDistance)
+      {
+        ArrayList<Edge> newPath = new ArrayList<Edge>();
+        newPath.addAll(path.get(neighbors.get(i).getNeighbor(minNode).getLabel()));
+        newPath.add(neighbors.get(i));
+        path.put(minNodeKey, newPath);
+      }
+    }
+
+    for (int i = 0; i<neighbors.size(); i++)
+    {
+      int newDistance = neighbors.get(i).getWeight()+distances.get(minNodeKey);
+
+      if (newDistance<distances.get(neighbors.get(i).getNeighbor(minNode).getLabel()))
+      {
+        distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
+      }
+    }
+    System.out.println(distances);
+  }
+  return path;
+}
+
 public static String pickMinDistance(HashMap<String, Node> nodesFound, HashMap<String, Node> graph, HashMap<String, Integer> distances)
 {
   String minKey = null;
   int minVal = -1;
 
-  //sets variables to an available value
   for (String key : graph.keySet())
   {
     //checks if node is in nodesFound
@@ -459,6 +668,22 @@ public void getNodeEdgeArrays(ArrayList<Edge> edges, HashMap<String, Node> nodes
   h.addNeighbor(hi);
   g.addNeighbor(gi);
   e.addNeighbor(eh);
+
+  b.addNeighbor(ab);
+  c.addNeighbor(ac);
+  c.addNeighbor(bc);
+  f.addNeighbor(bf);
+  d.addNeighbor(cd);
+  e.addNeighbor(ce);
+  h.addNeighbor(ch);
+  e.addNeighbor(de);
+  f.addNeighbor(df);
+  f.addNeighbor(ef);
+  g.addNeighbor(fg);
+  h.addNeighbor(gh);
+  i.addNeighbor(hi);
+  i.addNeighbor(gi);
+  h.addNeighbor(eh);
 
   nodes.put(a.getLabel(), a);
   nodes.put(b.getLabel(), b);
