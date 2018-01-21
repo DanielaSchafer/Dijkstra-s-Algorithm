@@ -30,8 +30,8 @@ void setup()
   treeName = createFont("Consolas", 35);
   treeDistance = createFont("Consolas", 25);
   sonia = createFont("Bookman Old Style Italic", 20);
-  title = createFont("Sylfaen", 50);
-  caption = createFont("Sylfaen", 30);
+  title = createFont("Sylfaen", 30);
+  caption = createFont("Sylfaen", 25);
 
   dino = loadImage("dijkstra.png");
   grass = loadImage("dans_grass.png");
@@ -63,10 +63,10 @@ void draw()
     image(grass, 0, 0);
     textFont(title);
     fill(0);
-    text("Dijkstra The Dinosaur", 350, 160);
+    text("Dijkstra The Dinosaur", 455, 250);
     textFont(caption);
-    text("Press Any Key to Begin", 440, 210);
-    image(dino, 550, 400);
+    text("Press Any Key to Begin", 475, 300);
+    image(dino, 560, 400);
   }
   if (state == GameState.STARTING_PAGE)
   {
@@ -80,10 +80,10 @@ void draw()
     text("Pick a Starting Node", 350, 60);
     stepNum = 0;
   }
-  if( state == GameState.RULES)
+  if ( state == GameState.RULES)
   {
-     image(grass, 0, 0);
-     text("Dijkstra The Dinosaur",350,100);
+    image(grass, 0, 0);
+    text("Dijkstra The Dinosaur", 350, 100);
   }
 }
 
@@ -127,7 +127,7 @@ void keyPressed()
       stepNum++;
     } else if (key == 'x')
     {
-      drawStPGraph(nodes,start);
+      drawStPGraph(nodes, start);
       drawDino(nodes.get(start));
     } else
       present(stepNum, start);
@@ -237,6 +237,14 @@ public void drawUsedEdge(Edge e)
 {
   strokeWeight(3);
   stroke(highlight);
+  Node a = e.getOne();
+  Node b = e.getTwo();
+  line(a.getX()+25, a.getY()+65, b.getX()+25, b.getY()+65);
+}
+
+public void drawPathEdge(Edge e) {
+  strokeWeight(3);
+  stroke(255,173,41);
   Node a = e.getOne();
   Node b = e.getTwo();
   line(a.getX()+25, a.getY()+65, b.getX()+25, b.getY()+65);
