@@ -69,7 +69,7 @@ void draw()
     text("Press 'enter' to view rules\nPress any key to play",600,280);
     image(dino, 560, 400);
     textFont(authors);
-    text("Created by Dan", 600, 550);
+    text("Created by Daniela Schafer", 600, 550);
     text("Graphics by Sonia Fung", 600, 580);
     textFont(title);
   }
@@ -152,7 +152,7 @@ void keyPressed()
       drawDino(nodes.get(start));
     } else if (key == 'z')
     {
-      drawCompleteGraph(nodes, edges);
+      drawCompleteGraph(nodes, edges,start);
     } else
       present(stepNum, start);
   }
@@ -179,7 +179,7 @@ public void present(int step, String start)
     drawHighlightedGraph(nodes, edges, found, step, start);
     drawDino(nodes.get(start));
   } else
-  drawCompleteGraph(nodes, edges);
+  drawCompleteGraph(nodes, edges,start);
 }
 
 public void drawDino(Node n)
@@ -372,9 +372,9 @@ public void drawHighlightedPath(HashMap<String, Node> nodes, String start, Strin
   }
 }
 
-public void drawCompleteGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges)
+public void drawCompleteGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges,String start)
 {
-  HashMap<String, Integer> distances = getShortestPaths(nodes, "a");
+  HashMap<String, Integer> distances = getShortestPaths(nodes, start);
   for (int i = 0; i<edges.size(); i++)
   {
     drawEdgeWithWeight(edges.get(i));
@@ -392,7 +392,7 @@ public void drawStPGraph(HashMap<String, Node> nodes, String start)
 {
   HashMap<String, ArrayList<Edge>> spTree = getShortestPathTree(nodes, start);
   ArrayList<Edge> usedEdges = getSptEdges(spTree);
-  HashMap<String, Integer> distances = getShortestPaths(nodes, "a");
+  HashMap<String, Integer> distances = getShortestPaths(nodes, start);
 
   for (int i = 0; i<edges.size(); i++)
   {
