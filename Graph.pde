@@ -13,6 +13,7 @@ PFont treeDistance;
 PFont sonia;
 PFont title;
 PFont caption;
+PFont authors;
 
 static ArrayList<Edge> edges;
 HashMap<String, Node> nodes;
@@ -32,6 +33,7 @@ void setup()
   sonia = createFont("Bookman Old Style Italic", 20);
   title = createFont("Sylfaen", 30);
   caption = createFont("Sylfaen", 25);
+  authors = createFont("Sylfaen", 18);
 
   dino = loadImage("dijkstra.png");
   grass = loadImage("dans_grass.png");
@@ -63,21 +65,22 @@ void draw()
     image(grass, 0, 0);
     textFont(title);
     fill(0);
-    text("Dijkstra The Dinosaur", 455, 250);
+    text("Dijkstra The Dinosaur", 447, 225);
     textFont(caption);
-    text("Press Any Key to Begin", 475, 300);
+    text("Press Any Key to Begin", 465, 275);
     image(dino, 560, 400);
+    textFont(authors);
+    text("Created By Dan", 530, 550);
+    text("Art by Sonia Fung", 520, 580);
+    textFont(title);
   }
   if (state == GameState.STARTING_PAGE)
   {
     image(grass, 0, 0);
     drawGraphWithWeight(nodes, edges);
-    textFont(sonia);
-    fill(255);
-    text("Art by Sonia Fung", 1000, 780);
     textFont(title);
     fill(0);
-    text("Pick a Starting Node", 350, 60);
+    text("Pick a Starting Node", 450, 60);
     stepNum = 0;
   }
   if ( state == GameState.RULES)
@@ -99,18 +102,12 @@ void keyPressed()
       start = Character.toString(key);
       state = GameState.GAME;
       image(grass, 0, 0);
-      fill(255);
-      textFont(sonia);
-      text("Art by Sonia Fung", 1000, 780);
       drawGraphWithWeight(nodes, edges);
       drawDino(nodes.get(start));
     }
   } else if (state == GameState.GAME) {
     System.out.println(stepNum);
     image(grass, 0, 0);
-    fill(255);
-    textFont(sonia);
-    text("Art by Sonia Fung", 1000, 780);
     if (key == 'r')
     {
       state = GameState.STARTING_PAGE;
@@ -120,15 +117,25 @@ void keyPressed()
       drawHighlightedPath(nodes, start, keyVal);
       drawDino(nodes.get(keyVal));
       stepNum = 0;
-    } else if (key == 'z')
+    } else if (keyCode == RIGHT)
     {
       System.out.println("pressed " +stepNum);
       present(stepNum, start);
-      stepNum++;
+      if (stepNum<nodes.size())
+        stepNum++;
+    } else if (keyCode == LEFT)
+    {
+      System.out.println("pressed " +stepNum);
+      present(stepNum, start);
+      if (stepNum>=0)
+        stepNum--;
     } else if (key == 'x')
     {
       drawStPGraph(nodes, start);
       drawDino(nodes.get(start));
+    } else if (key == 'z')
+    {
+      drawCompleteGraph(nodes, edges);
     } else
       present(stepNum, start);
   }
@@ -244,7 +251,7 @@ public void drawUsedEdge(Edge e)
 
 public void drawPathEdge(Edge e) {
   strokeWeight(3);
-  stroke(255,173,41);
+  stroke(255, 173, 41);
   Node a = e.getOne();
   Node b = e.getTwo();
   line(a.getX()+25, a.getY()+65, b.getX()+25, b.getY()+65);
