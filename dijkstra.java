@@ -7,7 +7,6 @@ public class dijkstra {
 
 		HashMap<String,Node> nodes = new HashMap<String,Node>();
 
-
 		Node a = new Node("a");
 		Node b = new Node("b");
 		Node c = new Node("c");
@@ -51,6 +50,22 @@ public class dijkstra {
 		g.addNeighbor(gi);
 		e.addNeighbor(eh);
 
+		b.addNeighbor(ab);
+		c.addNeighbor(ac);
+		c.addNeighbor(bc);
+		f.addNeighbor(bf);
+		d.addNeighbor(cd);
+		e.addNeighbor(ce);
+		h.addNeighbor(ch);
+		e.addNeighbor(de);
+		f.addNeighbor(df);
+		f.addNeighbor(ef);
+		g.addNeighbor(fg);
+		h.addNeighbor(gh);
+		i.addNeighbor(hi);
+		i.addNeighbor(gi);
+		h.addNeighbor(eh);
+
 		nodes.put(a.getLabel(), a);
 		nodes.put(b.getLabel(), b);
 		nodes.put(c.getLabel(), c);
@@ -61,11 +76,11 @@ public class dijkstra {
 		nodes.put(h.getLabel(), h);
 		nodes.put(i.getLabel(), i);
 
-		System.out.println(getShortestPaths(nodes,"a"));
+		System.out.println(getShortestPathTree(nodes,"a"));
 	}
 
 	//finds the shortest path from the starting node to each node
-	public static HashMap<String,Integer> getShortestPaths(HashMap<String,Node> graph, String startingNode)
+	public static HashMap<String,Integer> getShortestPathTree(HashMap<String,Node> graph, String startingNode)
 	{
 		//the distance hm: where the shortest distance from each node to the starting node is stored
 		HashMap<String,Integer> distances = new HashMap<String,Integer>();
@@ -88,9 +103,9 @@ public class dijkstra {
 			//finds the node with the shortest distance, and that hasn't been accounted for
 			String minNodeKey = pickMinDistance(found,graph,distances);
 			Node minNode = graph.get(minNodeKey);
+			System.out.println(minNode);
 			//adds it to the hm of nodes that have been found
 			found.put(minNodeKey, minNode);
-			System.out.println(minNodeKey);
 
 			//gets neighboring edges of the minNode
 			ArrayList<Edge> neighbors = minNode.getNeighbors();
@@ -109,8 +124,90 @@ public class dijkstra {
 					distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
 				}
 			}
+			System.out.println(distances);
 		}
 		return distances;
+	}
+
+
+	public static HashMap<String,ArrayList<Edge>> getShortestPaths(HashMap<String,Node> graph,String start)
+	{
+		//the distance hm: where the shortest distance from each node to the starting node is stored
+		HashMap<String,Integer> distances = new HashMap<String,Integer>();
+		HashMap<String,ArrayList<Edge>> path = new HashMap<String,ArrayList<Edge>>();
+
+		//keeps track of nodes already used
+		HashMap<String, Node> found = new HashMap<String, Node>();
+
+		//gives each node a distance of infinity (max integer)
+		//except for the starting node, which gets a distance of 0
+		for(String key : graph.keySet())
+		{
+			if(key.equals(start)) {
+				distances.put(key, 0);
+				ArrayList<Edge> newPath = new ArrayList<Edge>();
+				path.put(key,newPath);
+			}
+			else
+				distances.put(key,Integer.MAX_VALUE);
+		}
+
+		//uses a while loop to make sure to hit all the nodes once
+		while(found.size()<graph.size())
+		{
+			//finds the node with the shortest distance, and that hasn't been accounted for
+			String minNodeKey = pickMinDistance(found,graph,distances);
+			Node minNode = graph.get(minNodeKey);
+			//System.out.println(minNode);
+			//adds it to the hm of nodes that have been found
+			found.put(minNodeKey, minNode);
+
+			//gets neighboring edges of the minNode
+			ArrayList<Edge> neighbors = minNode.getNeighbors();
+
+			System.out.println("neighbors "+ neighbors);
+
+			for(int i = 0; i<neighbors.size(); i++)
+			{
+				int checkingDistance = distances.get(neighbors.get(i).getNeighbor(minNode).getLabel())+neighbors.get(i).getWeight();
+				int minNodeDistance = distances.get(minNodeKey);
+
+				System.out.println("check "+checkingDistance);
+				System.out.println("min "+minNodeDistance);
+
+				if(checkingDistance == minNodeDistance)
+				{
+					ArrayList<Edge> newPath = new ArrayList<Edge>();
+					newPath.addAll(path.get(neighbors.get(i).getNeighbor(minNode).getLabel()));
+					newPath.add(neighbors.get(i));
+					path.put(minNodeKey,newPath);
+				}
+			}
+
+			//changes the distance for each of the edges based off of the distance of the node and the weight of the edge
+			//only if the new distance is shorter than the original distance
+			for(int i = 0; i<neighbors.size(); i++)
+			{
+				//the distance from the starting node to the minNode + the weight of the edge
+				int newDistance = neighbors.get(i).getWeight()+distances.get(minNodeKey);
+
+				//checks to make sure that the edge hasn't been accounted for
+				//by seeing if the new distance is less than the original distance of the node
+				if(newDistance<distances.get(neighbors.get(i).getNeighbor(minNode).getLabel()))
+				{
+					distances.put(neighbors.get(i).getNeighbor(minNode).getLabel(), newDistance);
+				}
+			}
+			System.out.println(distances);
+		}
+		return path;
+	}
+
+	public static ArrayList<Edge> getShortestPath(String start, String end, HashMap<String,Node> graph)
+	{
+		ArrayList<Edge> shortestPath = new ArrayList<Edge>();
+		HashMap<String,ArrayList<Edge>> paths = getShortestPaths(graph,start);
+		return paths.get(end);
 	}
 
 	//finds the next node with the shortest distance (cannot be a node already found)
@@ -142,5 +239,4 @@ public class dijkstra {
 		}
 		return minKey;
 	}
-
 }
