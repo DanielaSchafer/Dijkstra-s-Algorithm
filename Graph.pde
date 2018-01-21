@@ -153,7 +153,7 @@ public void present(int step, String start)
     ArrayList<Node> found = getShortestPathsRoute(nodes, start, edges, step);
 
     drawHighlightedGraph(nodes, edges, found, step, start);
-    drawDino(found.get(found.size()-1));
+    drawDino(nodes.get(start));
   } else
   drawCompleteGraph(nodes, edges);
 }
