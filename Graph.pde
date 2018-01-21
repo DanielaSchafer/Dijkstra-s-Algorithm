@@ -14,6 +14,7 @@ PFont sonia;
 PFont title;
 PFont caption;
 PFont authors;
+PFont header;
 
 static ArrayList<Edge> edges;
 HashMap<String, Node> nodes;
@@ -32,8 +33,9 @@ void setup()
   treeDistance = createFont("Consolas", 25);
   sonia = createFont("Bookman Old Style Italic", 20);
   title = createFont("Sylfaen", 30);
-  caption = createFont("Sylfaen", 25);
+  caption = createFont("Sylfaen", 22);
   authors = createFont("Sylfaen", 18);
+  header = createFont("Sylfaen", 24);
 
   dino = loadImage("dijkstra.png");
   grass = loadImage("dans_grass.png");
@@ -51,10 +53,6 @@ void setup()
   getNodeEdgeArrays(edges, nodes);
   highlight = color(255, 0, 0);
   state = GameState.START;
-
-  drawGraph(nodes, edges);
-  String[] fontList = PFont.list();
-  printArray(fontList);
 }
 
 
@@ -68,10 +66,10 @@ void draw()
     textAlign(CENTER);
     text("Dijkstra The Dinosaur", 600, 225);
     textFont(caption);
-    text("Press Any Key to Begin", 600, 275);
+    text("Press 'enter' to view rules\nPress any key to play",600,280);
     image(dino, 560, 400);
     textFont(authors);
-    text("Created By Dan", 600, 550);
+    text("Created by Dan", 600, 550);
     text("Graphics by Sonia Fung", 600, 580);
     textFont(title);
   }
@@ -81,13 +79,21 @@ void draw()
     drawGraphWithWeight(nodes, edges);
     textFont(title);
     fill(0);
-    text("Pick a Starting Node", 450, 60);
+    textAlign(CENTER);
+    text("Pick a Starting Node", 600, 60);
     stepNum = 0;
   }
   if ( state == GameState.RULES)
   {
     image(grass, 0, 0);
-    text("Dijkstra The Dinosaur", 350, 100);
+    image(tree,580,170);
+    textAlign(CENTER);
+    textFont(title);
+    text("Dijkstra The Dinosaur", 600, 300);
+   textFont(header);
+    text("How To Play:", 600, 350);
+       textFont(caption);
+    text("Use keyboard to pick nodes\nUse arrow keys to see step by step process of shortest path tree\nSelect node to get shortest path from starting node\nPress 'z' to view weights and distances\n Press 'x' to view shortest path tree\nPress 'r' to pick new starting node\nPress 'q' to return to homescreen", 600, 400);
   }
 }
 
@@ -95,9 +101,17 @@ void keyPressed()
 {
   if (state == GameState.START)
   {
-    state = GameState.STARTING_PAGE;
+    if (keyCode == ENTER)
+      state = GameState.RULES;
+    else
+      state = GameState.STARTING_PAGE;
+  } else if (state == GameState.RULES)
+  {
+    state = GameState.START;
   } else if (state == GameState.STARTING_PAGE)
   {
+    if (key == 'q')
+      state = GameState.START;
     if (nodes.containsKey(Character.toString(key)))
     {
       start = Character.toString(key);
@@ -107,6 +121,8 @@ void keyPressed()
       drawDino(nodes.get(start));
     }
   } else if (state == GameState.GAME) {
+    if (key == 'q')
+      state = GameState.START;
     System.out.println(stepNum);
     image(grass, 0, 0);
     if (key == 'r')
@@ -181,6 +197,7 @@ public void drawNodes(Node[] nodes)
 
 public void drawNode(Node n)
 {
+  textAlign(LEFT);
   strokeWeight(1);
   stroke(0);
   image(tree, n.getX(), n.getY());
@@ -201,6 +218,7 @@ public void drawEdge(Edge e)
 
 public void drawEdgeWithWeight(Edge e)
 {
+  textAlign(LEFT);
   strokeWeight(3);
   stroke(0);
   Node a = e.getOne();
@@ -222,6 +240,7 @@ public void drawEdgeWithWeight(Edge e)
 
 public void drawColorEdgeWithWeight(Edge e)
 {
+  textAlign(LEFT);
   strokeWeight(3);
   stroke(highlight);
   Node a = e.getOne();
@@ -391,6 +410,7 @@ public void drawStPGraph(HashMap<String, Node> nodes, String start)
 
 public void drawNodeLabel(Node n, int dist)
 {
+  textAlign(LEFT);
   fill(22, 159, 242);
   if (dist == Integer.MAX_VALUE)
   {
@@ -417,6 +437,7 @@ public void drawNodeLabel(Node n, int dist)
 
 public void drawNodeLabelFound(Node n, int dist)
 {
+  textAlign(LEFT);
   fill(255, 190, 65);
   if (dist == Integer.MAX_VALUE)
   {
