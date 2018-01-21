@@ -65,13 +65,14 @@ void draw()
     image(grass, 0, 0);
     textFont(title);
     fill(0);
-    text("Dijkstra The Dinosaur", 447, 225);
+    textAlign(CENTER);
+    text("Dijkstra The Dinosaur", 600, 225);
     textFont(caption);
-    text("Press Any Key to Begin", 465, 275);
+    text("Press Any Key to Begin", 600, 275);
     image(dino, 560, 400);
     textFont(authors);
-    text("Created By Dan", 530, 550);
-    text("Art by Sonia Fung", 520, 580);
+    text("Created By Dan", 600, 550);
+    text("Graphics by Sonia Fung", 600, 580);
     textFont(title);
   }
   if (state == GameState.STARTING_PAGE)
