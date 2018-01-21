@@ -1,7 +1,8 @@
 //DIJKSTRA THE DINOSAUR
-//PRESS ANY KEY WITH A CORRESPONDING NODE LETTER TO GET THE SHORTEST PATH
+//PRESS ANY KEY WITH A CORRESPONDING NODE LETTER TO DISPLAY THE SHORTEST PATH TO THAT NODE
 //PRESS R TO RESTART
 //PRESS Z TO GO THROUGH THE STEPS OF GETTING THE SHORTEST PATH TREE
+//PRESS X TO DISPLAY SHORTEST PATH TREE
 
 PImage dino;
 PImage grass;
@@ -9,11 +10,15 @@ PImage tree;
 
 PFont treeName;
 PFont treeDistance;
+PFont sonia;
+PFont title;
+PFont caption;
+
 static ArrayList<Edge> edges;
 HashMap<String, Node> nodes;
 String start;
 color highlight;
-
+GameState state;
 
 int stepNum;
 
@@ -24,6 +29,9 @@ void setup()
 
   treeName = createFont("Consolas", 35);
   treeDistance = createFont("Consolas", 25);
+  sonia = createFont("Bookman Old Style Italic", 20);
+  title = createFont("Sylfaen", 50);
+  caption = createFont("Sylfaen", 30);
 
   dino = loadImage("dijkstra.png");
   grass = loadImage("dans_grass.png");
@@ -31,8 +39,7 @@ void setup()
 
   image(grass, 0, 0);
 
-  PFont g = createFont("Bookman Old Style Italic", 20);
-  textFont(g);
+  textFont(sonia);
   text("Art by Sonia Fung", 1000, 780);
 
   start = "g";
@@ -41,51 +48,97 @@ void setup()
   nodes = new HashMap<String, Node>();
   getNodeEdgeArrays(edges, nodes);
   highlight = color(255, 0, 0);
+  state = GameState.START;
 
   drawGraph(nodes, edges);
+  String[] fontList = PFont.list();
+  printArray(fontList);
 }
 
 
 void draw()
 {
+  if (state == GameState.START)
+  {
+    image(grass, 0, 0);
+    textFont(title);
+    fill(0);
+    text("Dijkstra The Dinosaur", 350, 160);
+    textFont(caption);
+    text("Press Any Key to Begin", 440, 210);
+    image(dino, 550, 400);
+  }
+  if (state == GameState.STARTING_PAGE)
+  {
+    image(grass, 0, 0);
+    drawGraphWithWeight(nodes, edges);
+    textFont(sonia);
+    fill(255);
+    text("Art by Sonia Fung", 1000, 780);
+    textFont(title);
+    fill(0);
+    text("Pick a Starting Node", 350, 60);
+    stepNum = 0;
+  }
+  if( state == GameState.RULES)
+  {
+     image(grass, 0, 0);
+     text("Dijkstra The Dinosaur",350,100);
+  }
 }
 
 void keyPressed()
 {
-  System.out.println(stepNum);
-  image(grass, 0, 0);
-  fill(255);
-  PFont g = createFont("Bookman Old Style Italic", 20);
-  textFont(g);
-  text("Art by Sonia Fung", 1000, 780);
-  if (key == 'r')
+  if (state == GameState.START)
   {
-    stepNum = -2;
-    present(stepNum, start);
-  } else if (nodes.containsKey(Character.toString(key)))
+    state = GameState.STARTING_PAGE;
+  } else if (state == GameState.STARTING_PAGE)
   {
-    String keyVal = Character.toString(key);
-    drawHighlightedPath(nodes, start, keyVal);
-    drawDino(nodes.get(keyVal));
-    stepNum = 0;
-  } else if (key == 'z')
-  {
-    System.out.println("pressed " +stepNum);
-    present(stepNum, start);
-    stepNum++;
-  } else
-    present(stepNum, start);
+    if (nodes.containsKey(Character.toString(key)))
+    {
+      start = Character.toString(key);
+      state = GameState.GAME;
+      image(grass, 0, 0);
+      fill(255);
+      textFont(sonia);
+      text("Art by Sonia Fung", 1000, 780);
+      drawGraphWithWeight(nodes, edges);
+      drawDino(nodes.get(start));
+    }
+  } else if (state == GameState.GAME) {
+    System.out.println(stepNum);
+    image(grass, 0, 0);
+    fill(255);
+    textFont(sonia);
+    text("Art by Sonia Fung", 1000, 780);
+    if (key == 'r')
+    {
+      state = GameState.STARTING_PAGE;
+    } else if (nodes.containsKey(Character.toString(key)))
+    {
+      String keyVal = Character.toString(key);
+      drawHighlightedPath(nodes, start, keyVal);
+      drawDino(nodes.get(keyVal));
+      stepNum = 0;
+    } else if (key == 'z')
+    {
+      System.out.println("pressed " +stepNum);
+      present(stepNum, start);
+      stepNum++;
+    } else if (key == 'x')
+    {
+      drawStPGraph(nodes,start);
+      drawDino(nodes.get(start));
+    } else
+      present(stepNum, start);
+  }
 }
 
 public void present(int step, String start)
 {
-  if(step <-2)
-  {
-    drawGraph(nodes,edges);
-  }
   if (step <-1)
   {
-    drawGraph(nodes, edges);
+    drawGraphWithWeight(nodes, edges);
     drawDino(nodes.get(start));
   } else if (step <0)
   {
@@ -297,6 +350,26 @@ public void drawCompleteGraph(HashMap<String, Node> nodes, ArrayList<Edge> edges
     int dist = distances.get(key);
     drawNode(n);
     drawNodeLabel(n, dist);
+  }
+}
+
+public void drawStPGraph(HashMap<String, Node> nodes, String start)
+{
+  HashMap<String, ArrayList<Edge>> spTree = getShortestPathTree(nodes, start);
+  ArrayList<Edge> usedEdges = getSptEdges(spTree);
+  HashMap<String, Integer> distances = getShortestPaths(nodes, "a");
+
+  for (int i = 0; i<edges.size(); i++)
+  {
+    if (usedEdges.contains(edges.get(i)))
+      drawColorEdgeWithWeight(edges.get(i));
+    else
+      drawEdge(edges.get(i));
+  }
+  for (String key : nodes.keySet())
+  {
+    drawNode(nodes.get(key));
+    drawNodeLabel(nodes.get(key), distances.get(key));
   }
 }
 
